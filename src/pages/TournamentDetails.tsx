@@ -68,7 +68,7 @@ const TournamentDetails = () => {
   };
 
   useEffect(() => {
-    if (tournament && tournament.status === 'upcoming' && tournament.tournament_participants?.length === tournament.max_participants) {
+    if (tournament && tournament.status === 'upcoming' && tournament.tournament_participants?.length === tournament.max_participants && !tournament.matches?.length) {
       handleStartTournament();
     }
   }, [tournament]);
