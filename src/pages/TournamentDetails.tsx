@@ -54,8 +54,10 @@ const TournamentDetails = () => {
     navigate(`/matches/${matchId}`);
   };
 
+  let isStarting = false;
   const handleStartTournament = async () => {
-    if (tournament) {
+    if (tournament && !isStarting) {
+      isStarting = true;
       try {
         await generateTournamentMatches(tournament.id);
         toast.success("Tournament started and matches created!");
@@ -63,6 +65,8 @@ const TournamentDetails = () => {
       } catch (error) {
         console.error("Error starting tournament:", error);
         toast.error("Failed to start tournament.");
+      } finally {
+        isStarting = false;
       }
     }
   };
