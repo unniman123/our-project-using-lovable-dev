@@ -1,14 +1,15 @@
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
-import Index from "@/pages/Index";
-import Tournaments from "@/pages/Tournaments";
-import TournamentDetails from "@/pages/TournamentDetails";
-import Matchmaking from "@/pages/Matchmaking";
-import MatchDetails from "@/pages/MatchDetails";
-import Profile from "@/pages/Profile";
-import Auth from "@/pages/Auth";
-import TournamentManagement from "@/pages/admin/TournamentManagement";
-import UserManagement from "@/pages/admin/UserManagement";
+import Index from "../../pages/Index";
+import Tournaments from "../../pages/Tournaments";
+import TournamentDetails from "../../pages/TournamentDetails";
+import Matchmaking from "../../pages/Matchmaking";
+import MatchDetails from "../../pages/MatchDetails";
+import Profile from "../../pages/Profile";
+import Auth from "../../pages/Auth";
+import TournamentManagement from "../../pages/admin/TournamentManagement";
+import UserManagement from "../../pages/admin/UserManagement";
+import DisputeManagement from "../../pages/admin/DisputeManagement";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +35,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute adminOnly>
             <UserManagement />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/admin/disputes" 
+        element={
+          <PrivateRoute adminOnly>
+            <DisputeManagement />
           </PrivateRoute>
         } 
       />

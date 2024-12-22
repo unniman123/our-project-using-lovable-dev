@@ -1,5 +1,5 @@
 import { supabase } from "../integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "../components/ui/use-toast";
 
 // Function to shuffle an array randomly
 function shuffleArray(array: any[]) {
@@ -87,11 +87,15 @@ Dispute resolution: ${tournament?.dispute_resolution_rules || 'Contact tournamen
           .update({ status: 'in_match' })
           .in('player_id', [player1.player_id, player2.player_id]);
 
-        // Notify players of their match
-        toast.success(`Match created! Check your active matches.`);
-      }
-    }
-
+        
+                // Notify players of their match
+                const { toast } = useToast();
+                toast({
+                  title: "Match created!",
+                  description: `Check your active matches.`,
+                });
+              }
+            }
     // Update tournament status
     await supabase
       .from('tournaments')

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trophy } from "lucide-react";
-import TournamentCard from '@/components/TournamentCard';
+import TournamentCard from '../TournamentCard';
+import { Link } from 'react-router-dom';
 
 interface Tournament {
   id: string;
@@ -29,7 +30,14 @@ const ActiveTournaments = ({ tournaments, isLoading }: ActiveTournamentsProps) =
         <Trophy className="text-gaming-accent" />
         Active Tournaments
       </h2>
-      
+      <div className="flex justify-between items-center mb-4">
+        
+        <div className="space-x-2">
+          <Link to="/admin/disputes" className="bg-gaming-accent hover:bg-gaming-accent/80 text-white px-4 py-2 rounded-md">
+            Manage Disputes
+          </Link>
+        </div>
+      </div>
       {isLoading ? (
         <div className="text-center py-8 text-gray-400">Loading tournaments...</div>
       ) : activeTournaments?.length === 0 ? (

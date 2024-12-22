@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSessionContext } from '@supabase/auth-helpers-react';
+import { useToast } from "../ui/use-toast";
 import { MessageCircle, X, Bell, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { supabase } from "../../integrations/supabase/client";
@@ -54,6 +55,29 @@ const GlobalChat = () => {
         (payload) => {
           console.log('New message received:', payload);
           setMessages((prev) => [...prev, payload.new]);
+          // Fetch sender's username
+          const fetchSender = async () => {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('id', (payload.new as { sender_id: string }).sender_id)
+              .single();
+
+            if (error) {
+              console.error('Error fetching sender username:', error);
+              return;
+            }
+
+            // Show notification
+            if (data?.username) {
+              const { toast } = useToast();
+              toast({
+                title: `New message from ${data.username}`,
+                description: (payload.new as { message: string }).message,
+              });
+            }
+          };
+          fetchSender();
         }
       )
       .subscribe();
