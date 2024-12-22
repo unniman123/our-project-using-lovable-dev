@@ -38,6 +38,13 @@ const Index = () => {
           player1:profiles!matches_player1_id_fkey(username),
           player2:profiles!matches_player2_id_fkey(username)
         `)
+        .in('tournament_id', 
+          await supabase
+            .from('tournaments')
+            .select('id')
+            .is('deleted_at', null)
+            .then((res) => res.data.map((item) => item.id))
+        )
         .or(`player1_id.eq.${session?.user?.id},player2_id.eq.${session?.user?.id}`)
         .order('match_date', { ascending: false })
         .limit(5);
