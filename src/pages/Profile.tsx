@@ -13,8 +13,26 @@ const Profile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState('');
-  const [gameId, setGameId] = useState('');
+  const [gameAccounts, setGameAccounts] = useState([]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
+
+  const checkUsernameUnique = async (newUsername: string) => {
+    if (newUsername === profile?.username) {
+      return true;
+    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('username', newUsername)
+      .single();
+
+    if (error) {
+      console.error("Error checking username:", error);
+      return false;
+    }
+    return !data;
+  };
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ['profile', session?.user?.id],
@@ -27,7 +45,7 @@ const Profile = () => {
 
       if (error) throw error;
       setUsername(data.username || '');
-      setGameId(data.game_id || '');
+      setGameAccounts((data as any)?.game_accounts || []);
       return data;
     },
     enabled: !!session?.user?.id,
@@ -42,6 +60,17 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
+      const isUnique = await checkUsernameUnique(username);
+      setIsUsernameValid(isUnique);
+      if (!isUnique) {
+        toast({
+          title: "Error",
+          description: "Username already taken",
+          variant: "destructive",
+        });
+        return;
+      }
+
       let avatarUrl = profile?.avatar_url;
 
       if (avatarFile) {
@@ -65,7 +94,7 @@ const Profile = () => {
         .from('profiles')
         .update({
           username,
-          game_id: gameId,
+          game_accounts: JSON.stringify(gameAccounts),
           avatar_url: avatarUrl,
         })
         .eq('id', session?.user?.id);
@@ -74,7 +103,7 @@ const Profile = () => {
 
       await refetchProfile();
       setIsEditing(false);
-      toast({
+       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
@@ -114,10 +143,11 @@ const Profile = () => {
             <div className="flex-1">
               <ProfileForm
                 username={username}
-                gameId={gameId}
+                gameAccounts={gameAccounts}
                 isEditing={isEditing}
+                isUsernameValid={isUsernameValid}
                 onUsernameChange={(e) => setUsername(e.target.value)}
-                onGameIdChange={(e) => setGameId(e.target.value)}
+                onGameAccountsChange={(accounts) => setGameAccounts(accounts)}
               />
             </div>
           </div>
