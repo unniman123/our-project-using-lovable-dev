@@ -47,4 +47,5 @@ export interface BaseTournament extends BaseEntity {
   dispute_resolution_rules?: string | null;
   prize_distributed?: boolean | null;
   deleted_at?: string | null;
+  image_url?: string | null;
 }

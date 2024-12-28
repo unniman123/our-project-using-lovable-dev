@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
+import { Tournament } from '../types/database/tournament.types';
 import Navbar from '../components/Navbar';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -18,7 +19,31 @@ const TournamentDetails = () => {
   const navigate = useNavigate();
   const { session } = useSessionContext();
 
-  const { data: tournament, isLoading: tournamentLoading, refetch } = useQuery({
+  interface ExtendedTournament extends Tournament {
+    image_url?: string;
+    tournament_participants?: {
+      player_id: string;
+      status: string;
+      profiles: {
+        username: string;
+        avatar_url: string;
+        skill_rating: number;
+      };
+    }[];
+    matches?: {
+      id: string;
+      player1_id: string;
+      player2_id: string;
+      winner_id: string | null;
+      status: string;
+      match_date: string;
+      player1: { username: string };
+      player2: { username: string };
+      winner: { username: string } | null;
+    }[];
+  }
+
+  const { data: tournament, isLoading: tournamentLoading, refetch } = useQuery<ExtendedTournament>({
     queryKey: ['tournament', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -45,7 +70,7 @@ const TournamentDetails = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as ExtendedTournament;
     },
     enabled: !!id && !!session,
   });
@@ -109,6 +134,17 @@ const TournamentDetails = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
         <div className="mb-8">
+          <div className="relative w-full h-64 rounded-lg overflow-hidden mb-4">
+            <img
+              src={tournament.image_url || '/placeholder.svg'}
+              alt={tournament.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gaming-dark/80 via-transparent to-transparent" />
+          </div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-2">
             <Trophy className="text-gaming-accent" />
             {tournament.title}
