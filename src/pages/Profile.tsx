@@ -8,6 +8,8 @@ import { supabase } from "../integrations/supabase/client";
 import ProfileAvatar from '../components/profile/ProfileAvatar';
 import ProfileForm from '../components/profile/ProfileForm';
 import ProfileActions from '../components/profile/ProfileActions';
+import { GameAccountsList } from '../components/profile/GameAccountsList';
+import { GameAccount } from '../types/profile.types';
 
 const Profile = () => {
   const { id: profileId } = useParams();
@@ -49,9 +51,22 @@ const Profile = () => {
       if (error) throw error;
       setUsername(data.username || '');
       console.log('Initial game_accounts:', data.game_accounts);
-      const gameAccounts = Array.isArray(data.game_accounts) 
-        ? data.game_accounts 
-        : [];
+      let gameAccounts: GameAccount[] = [];
+      try {
+        const parsedAccounts = typeof data.game_accounts === 'string' 
+          ? JSON.parse(data.game_accounts)
+          : data.game_accounts;
+        
+        gameAccounts = Array.isArray(parsedAccounts)
+          ? parsedAccounts.map(account => ({
+              gameName: account.gameName || account.game_name || '',
+              gameId: account.gameId || account.game_id || '',
+              inGameName: account.inGameName || account.in_game_name || ''
+            }))
+          : [];
+      } catch (error) {
+        console.error('Error parsing game accounts:', error);
+      }
       setGameAccounts(gameAccounts);
       return data;
     },
@@ -160,6 +175,17 @@ const Profile = () => {
               />
             </div>
           </div>
+
+          {gameAccounts.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-white mb-4">Game Accounts</h2>
+              <GameAccountsList 
+                accounts={gameAccounts}
+                isEditing={isEditing}
+                onChange={(accounts) => setGameAccounts(accounts)}
+              />
+            </div>
+          )}
         </div>
       </Card>
     </div>
