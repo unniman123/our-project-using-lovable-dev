@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useQuery } from '@tanstack/react-query';
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import ProfileAvatar from '@/components/profile/ProfileAvatar';
-import ProfileForm from '@/components/profile/ProfileForm';
-import ProfileActions from '@/components/profile/ProfileActions';
+import { Card } from "../components/ui/card";
+import { useToast } from "../hooks/use-toast";
+import { supabase } from "../integrations/supabase/client";
+import ProfileAvatar from '../components/profile/ProfileAvatar';
+import ProfileForm from '../components/profile/ProfileForm';
+import ProfileActions from '../components/profile/ProfileActions';
 
 const Profile = () => {
+  const { id: profileId } = useParams();
   const { session } = useSessionContext();
+  const isCurrentUser = !profileId || profileId === session?.user?.id;
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState('');
@@ -35,17 +38,21 @@ const Profile = () => {
   };
 
   const { data: profile, refetch: refetchProfile } = useQuery({
-    queryKey: ['profile', session?.user?.id],
+    queryKey: ['profile', profileId || session?.user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', session?.user?.id)
+        .eq('id', profileId || session?.user?.id)
         .single();
 
       if (error) throw error;
       setUsername(data.username || '');
-      setGameAccounts((data as any)?.game_accounts || []);
+      console.log('Initial game_accounts:', data.game_accounts);
+      const gameAccounts = Array.isArray(data.game_accounts) 
+        ? data.game_accounts 
+        : [];
+      setGameAccounts(gameAccounts);
       return data;
     },
     enabled: !!session?.user?.id,
@@ -125,12 +132,14 @@ const Profile = () => {
       <Card className="max-w-2xl mx-auto p-6 bg-gaming-dark/50 border-gaming-accent/20">
         <div className="flex justify-between items-start mb-6">
           <h1 className="text-2xl font-bold text-white">Profile</h1>
-          <ProfileActions
-            isEditing={isEditing}
-            onEdit={() => setIsEditing(true)}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
+          {isCurrentUser && (
+            <ProfileActions
+              isEditing={isEditing}
+              onEdit={() => setIsEditing(true)}
+              onSave={handleSave}
+              onCancel={() => setIsEditing(false)}
+            />
+          )}
         </div>
 
         <div className="space-y-6">

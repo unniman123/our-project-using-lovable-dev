@@ -20,6 +20,7 @@ const AppRoutes = () => {
       <Route path="/matchmaking" element={<PrivateRoute><Matchmaking /></PrivateRoute>} />
       <Route path="/matches/:id" element={<PrivateRoute><MatchDetails /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      <Route path="/profile/:id" element={<PrivateRoute><Profile /></PrivateRoute>} />
       
       {/* Admin Routes */}
       <Route 

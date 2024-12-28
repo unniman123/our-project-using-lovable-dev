@@ -27,7 +27,7 @@ const GlobalChat = () => {
     const fetchMessages = async () => {
       const { data, error } = await supabase
         .from('direct_messages')
-        .select('*')
+        .select('*, sender_id:profiles(username, avatar_url)')
         .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser}),and(sender_id.eq.${selectedUser},receiver_id.eq.${session.user.id})`)
         .order('created_at', { ascending: true });
 
@@ -92,11 +92,14 @@ const GlobalChat = () => {
       if (!session?.user?.id) return;
   
       const fetchUnreadMessages = async () => {
-        const { data, error, count } = await supabase
-          .from('direct_messages')
-          .select('*, sender_id:profiles(username)')
-          .eq('receiver_id', session.user.id)
-          .eq('read', false);
+      const { data, error, count } = await supabase
+        .from('direct_messages')
+        .select(`
+          *,
+          profiles!direct_messages_sender_id_fkey(username)
+        `)
+        .eq('receiver_id', session.user.id)
+        .eq('read', false);
   
         if (error) {
           console.error('Error fetching unread messages:', error);

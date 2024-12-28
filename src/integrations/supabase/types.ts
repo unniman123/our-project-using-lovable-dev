@@ -322,6 +322,7 @@ export type Database = {
           skill_rating: number | null
           updated_at: string
           username: string
+          game_accounts: Json | null
         }
         Insert: {
           avatar_url?: string | null
