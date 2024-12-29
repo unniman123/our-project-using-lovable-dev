@@ -27,7 +27,7 @@ const GlobalChat = () => {
     const fetchMessages = async () => {
       const { data, error } = await supabase
         .from('direct_messages')
-        .select('*, sender_id:profiles(username, avatar_url)')
+        .select('*, profiles!direct_messages_sender_id_fkey(username, avatar_url)')
         .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser}),and(sender_id.eq.${selectedUser},receiver_id.eq.${session.user.id})`)
         .order('created_at', { ascending: true });
 
@@ -42,18 +42,36 @@ const GlobalChat = () => {
     fetchMessages();
 
     // Subscribe to new messages
+    console.log('Establishing message subscription for user:', session.user.id);
     const channel = supabase
-      .channel(`direct_messages:${session.user.id}`)
-      .on(
-        'postgres_changes',
+      .channel(`direct_messages:${session.user.id}`, {
+        config: {
+          presence: {
+            key: session.user.id,
+          },
+        },
+      })
+      .on('system', {}, (payload) => {
+        console.log('System event:', payload);
+      })
+      .on('broadcast', { event: 'test' }, (payload) => {
+        console.log('Broadcast event:', payload);
+      })
+      .on('presence', { event: 'sync' }, () => {
+        console.log('Presence sync');
+      })
+      .on('postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'direct_messages',
-          filter: `or(sender_id=eq.${session.user.id},receiver_id=eq.${session.user.id})`,
+        filter: `receiver_id=eq.${session.user.id}`,
         },
         (payload) => {
-          console.log('New message received:', payload);
+          console.log('New message received - Payload:', payload);
+          console.log('Message content:', payload.new.message);
+          console.log('Sender ID:', payload.new.sender_id);
+          console.log('Receiver ID:', payload.new.receiver_id);
           setMessages((prev) => [...prev, payload.new]);
           // Fetch sender's username
           const fetchSender = async () => {
@@ -70,17 +88,19 @@ const GlobalChat = () => {
 
             // Show notification
             if (data?.username) {
-              const { toast } = useToast();
-              toast({
-                title: `New message from ${data.username}`,
-                description: (payload.new as { message: string }).message,
-              });
+              console.log('New message from:', data.username);
             }
           };
           fetchSender();
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (err) {
+          console.error('Subscription error:', err);
+          return;
+        }
+        console.log('Subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);

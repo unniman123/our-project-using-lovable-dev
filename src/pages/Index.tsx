@@ -98,7 +98,7 @@ const Index = () => {
             <LayoutDashboard className="text-gaming-accent" />
             Dashboard
           </h1>
-          <p className="text-gray-400 mt-2">Welcome to your gaming hub</p>
+          <p className="text-gray-400 mt-2">HomeGround</p>
         </div>
 
         {userProfile?.is_admin && <AdminSection />}
