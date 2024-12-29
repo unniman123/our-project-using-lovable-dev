@@ -45,8 +45,8 @@ const TournamentCard = ({
           </div>
           
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-400">Entry Fee: ${entryFee}</span>
-            <span className="text-gaming-accent">Prize Pool: ${prizePool}</span>
+            <span className="text-gray-400">Entry Fee: ₹{entryFee}</span>
+            <span className="text-gaming-accent">Prize Pool: ₹{prizePool}</span>
           </div>
           
           <div className="flex items-center gap-2 text-sm text-gray-400">
