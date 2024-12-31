@@ -166,16 +166,22 @@ const Profile = () => {
         const fileExt = avatarFile.name.split('.').pop();
         const filePath = `${session?.user?.id}.${fileExt}`;
 
+        console.log('Uploading avatar file:', filePath);
+        
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(filePath, avatarFile, { upsert: true });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Avatar upload error:', uploadError);
+          throw uploadError;
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('avatars')
           .getPublicUrl(filePath);
 
+        console.log('Avatar uploaded successfully. Public URL:', publicUrl);
         avatarUrl = publicUrl;
       }
 
