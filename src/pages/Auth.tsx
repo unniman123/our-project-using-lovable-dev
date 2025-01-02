@@ -30,14 +30,22 @@ const Auth = () => {
           supabaseClient={supabase}
           appearance={{
             theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: '#6d28d9',
-                  brandAccent: '#7c3aed',
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#6d28d9',
+                    brandAccent: '#7c3aed',
+                    inputText: '#ffffff',
+                    inputLabelText: '#ffffff',
+                    messageText: '#ffffff',
+                    anchorTextColor: '#ffffff',
+                    defaultButtonBackground: '#6d28d9',
+                    defaultButtonBackgroundHover: '#7c3aed',
+                    defaultButtonBorder: 'transparent',
+                    defaultButtonText: '#ffffff'
+                  }
                 }
-              }
-            },
+              },
             className: {
               container: 'w-full',
               button: 'w-full bg-gaming-accent hover:bg-gaming-accent/90 text-white',
