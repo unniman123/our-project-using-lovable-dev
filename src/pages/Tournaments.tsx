@@ -1,24 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import Navbar from '../components/Navbar';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '../components/ui/table';
+import { Button } from '../components/ui/button';
 import { Trophy, Users, Calendar, Loader2, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '../integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from "sonner";
 
+const GAME_FILTERS = ['All', 'FIFA', 'PES', 'Call of Duty', 'Madden 25', 'NBA 2K25', 'EA FC25'];
+
 const Tournaments = () => {
+  const [selectedGame, setSelectedGame] = useState('All');
   const { session } = useSessionContext();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
-    queryKey: ['tournaments'],
+    queryKey: ['tournaments', selectedGame],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('tournaments')
         .select(`
           *,
@@ -28,7 +31,13 @@ const Tournaments = () => {
           )
         `)
         .in('status', ['upcoming', 'in_progress'])
-        .order('start_date', { ascending: true });
+        .is('deleted_at', null);
+
+      if (selectedGame !== 'All') {
+        query = query.eq('game_type', selectedGame);
+      }
+
+      const { data, error } = await query.order('start_date', { ascending: true });
 
       if (error) throw error;
       return data;
@@ -120,6 +129,20 @@ const Tournaments = () => {
           <Trophy className="text-gaming-accent" />
           Tournaments
         </h1>
+        
+        <div className="flex gap-2 mb-6 overflow-x-auto">
+          {GAME_FILTERS.map((game) => (
+            <Button
+              key={game}
+              variant={selectedGame === game ? 'default' : 'secondary'}
+              onClick={() => setSelectedGame(game)}
+              className="whitespace-nowrap"
+            >
+              {game}
+            </Button>
+          ))}
+        </div>
+
         <div className="bg-gaming-dark/50 rounded-lg border border-gaming-accent/20">
           <Table>
             <TableHeader>

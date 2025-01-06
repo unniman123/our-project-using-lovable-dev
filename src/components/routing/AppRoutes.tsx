@@ -1,14 +1,15 @@
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
-import Index from "@/pages/Index";
-import Tournaments from "@/pages/Tournaments";
-import TournamentDetails from "@/pages/TournamentDetails";
-import Matchmaking from "@/pages/Matchmaking";
-import MatchDetails from "@/pages/MatchDetails";
-import Profile from "@/pages/Profile";
-import Auth from "@/pages/Auth";
-import TournamentManagement from "@/pages/admin/TournamentManagement";
-import UserManagement from "@/pages/admin/UserManagement";
+import Index from "../../pages/Index";
+import Tournaments from "../../pages/Tournaments";
+import TournamentDetails from "../../pages/TournamentDetails";
+import Matchmaking from "../../pages/Matchmaking";
+import MatchDetails from "../../pages/MatchDetails";
+import Profile from "../../pages/Profile";
+import Auth from "../../pages/Auth";
+import TournamentManagement from "../../pages/admin/TournamentManagement";
+import UserManagement from "../../pages/admin/UserManagement";
+import DisputeManagement from "../../pages/admin/DisputeManagement";
 
 const AppRoutes = () => {
   return (
@@ -19,6 +20,7 @@ const AppRoutes = () => {
       <Route path="/matchmaking" element={<PrivateRoute><Matchmaking /></PrivateRoute>} />
       <Route path="/matches/:id" element={<PrivateRoute><MatchDetails /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      <Route path="/profile/:id" element={<PrivateRoute><Profile /></PrivateRoute>} />
       
       {/* Admin Routes */}
       <Route 
@@ -34,6 +36,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute adminOnly>
             <UserManagement />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/admin/disputes" 
+        element={
+          <PrivateRoute adminOnly>
+            <DisputeManagement />
           </PrivateRoute>
         } 
       />

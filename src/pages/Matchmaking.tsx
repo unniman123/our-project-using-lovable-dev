@@ -2,17 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from "sonner";
+import { useToast } from "../components/ui/use-toast";
 import { Users, Loader, UserRound, X, Swords } from "lucide-react";
-import Navbar from '@/components/Navbar';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import Navbar from '../components/Navbar';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { supabase } from '../integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+
+interface Match {
+  id: string;
+}
 
 const Matchmaking = () => {
   const session = useSession();
   const queryClient = useQueryClient();
   const [isSearching, setIsSearching] = useState(false);
   const userId = session?.user?.id;
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Get current user's profile and matchmaking status
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -45,7 +53,9 @@ const Matchmaking = () => {
     },
     onError: (error) => {
       console.error('Error updating matchmaking status:', error);
-      toast.error("Failed to update matchmaking status");
+      toast({
+        title: "Failed to update matchmaking status",
+      });
     }
   });
 
@@ -58,17 +68,36 @@ const Matchmaking = () => {
       if (error) throw error;
 
       if (matchedPlayerId) {
-        const { data: match, error: matchError } = await supabase
+        const { data: matchData, error: matchError } = await supabase
           .rpc('create_match', { 
             player1_id: userId, 
             player2_id: matchedPlayerId 
-          });
+          }) as { data: Match, error: any };
 
         if (matchError) throw matchError;
 
-        toast.success("Match found! Game starting soon...");
+        // Fetch matched player's profile
+        const { data: matchedProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', matchedPlayerId)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching matched player profile:', profileError);
+          toast({
+            title: "Match found!",
+            description: "Game starting soon...",
+          });
+        } else {
+          toast({
+            title: "Match found!",
+            description: `You are matched with ${matchedProfile?.username}. Game starting soon...`,
+          });
+        }
+
         setIsSearching(false);
-        // Redirect to match page or show match details
+        navigate(`/matches/${matchData.id}`);
       }
     } catch (error) {
       console.error('Error finding match:', error);
@@ -96,13 +125,17 @@ const Matchmaking = () => {
     setIsSearching(newStatus);
     await updateMatchmakingStatus.mutateAsync(newStatus);
     
+    
     if (newStatus) {
-      toast.success("Entered matchmaking queue");
+      toast({
+        title: "Entered matchmaking queue",
+      });
     } else {
-      toast.info("Left matchmaking queue");
+      toast({
+        title: "Left matchmaking queue",
+      });
     }
   };
-
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-gaming-dark">

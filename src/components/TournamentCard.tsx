@@ -25,17 +25,14 @@ const TournamentCard = ({
     <Card className="group relative overflow-hidden bg-gaming-dark/50 border-gaming-accent/20 hover:border-gaming-accent/50 transition-all duration-300">
       <div className="flex h-full">
         <div className="relative w-48 overflow-hidden">
-          {image ? (
-            <img 
-              src={image} 
-              alt={title}
-              className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full bg-gaming-primary/20 flex items-center justify-center">
-              <Trophy className="w-12 h-12 text-gaming-accent" />
-            </div>
-          )}
+          <img 
+            src={image || '/placeholder.svg'} 
+            alt={title}
+            className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder.svg';
+            }}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gaming-dark" />
         </div>
         
@@ -48,8 +45,8 @@ const TournamentCard = ({
           </div>
           
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-400">Entry Fee: ${entryFee}</span>
-            <span className="text-gaming-accent">Prize Pool: ${prizePool}</span>
+            <span className="text-gray-400">Entry Fee: ₹{entryFee}</span>
+            <span className="text-gaming-accent">Prize Pool: ₹{prizePool}</span>
           </div>
           
           <div className="flex items-center gap-2 text-sm text-gray-400">

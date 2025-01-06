@@ -2,12 +2,12 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { LayoutDashboard } from "lucide-react";
-import Navbar from '@/components/Navbar';
-import AdminSection from '@/components/AdminSection';
-import StatsGrid from '@/components/dashboard/StatsGrid';
-import ActiveTournaments from '@/components/dashboard/ActiveTournaments';
-import MatchHistory from '@/components/dashboard/MatchHistory';
-import { supabase } from "@/integrations/supabase/client";
+import Navbar from '../components/Navbar';
+import AdminSection from '../components/AdminSection';
+import StatsGrid from '../components/dashboard/StatsGrid';
+import ActiveTournaments from '../components/dashboard/ActiveTournaments';
+import MatchHistory from '../components/dashboard/MatchHistory';
+import { supabase } from '../integrations/supabase/client';
 
 const Index = () => {
   const { session } = useSessionContext();
@@ -38,6 +38,13 @@ const Index = () => {
           player1:profiles!matches_player1_id_fkey(username),
           player2:profiles!matches_player2_id_fkey(username)
         `)
+        .in('tournament_id', 
+          await supabase
+            .from('tournaments')
+            .select('id')
+            .is('deleted_at', null)
+            .then((res) => res.data.map((item) => item.id))
+        )
         .or(`player1_id.eq.${session?.user?.id},player2_id.eq.${session?.user?.id}`)
         .order('match_date', { ascending: false })
         .limit(5);
@@ -58,6 +65,7 @@ const Index = () => {
           tournament_participants(count)
         `)
         .eq('status', 'upcoming')
+        .is('deleted_at', null) // Only fetch non-deleted tournaments
         .order('start_date', { ascending: true })
         .limit(3);
 
@@ -90,7 +98,7 @@ const Index = () => {
             <LayoutDashboard className="text-gaming-accent" />
             Dashboard
           </h1>
-          <p className="text-gray-400 mt-2">Welcome to your gaming hub</p>
+          <p className="text-gray-400 mt-2">HomeGround</p>
         </div>
 
         {userProfile?.is_admin && <AdminSection />}

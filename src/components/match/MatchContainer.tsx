@@ -2,8 +2,9 @@ import React from 'react';
 import MatchInfo from './MatchInfo';
 import MatchCommunication from './MatchCommunication';
 import MatchSidebar from './MatchSidebar';
-import { Profile } from '@/types/database/profile.types';
-import { Tournament } from '@/types/database/tournament.types';
+import { Profile } from '../../types/database/profile.types';
+import { Tournament } from '../../types/database/tournament.types';
+import { Link } from 'react-router-dom';
 
 interface MatchContainerProps {
   match: {
@@ -25,6 +26,11 @@ interface MatchContainerProps {
 const MatchContainer = ({ match, isParticipant, opponentId }: MatchContainerProps) => {
   return (
     <div className="space-y-8">
+      <div className="flex justify-end mb-4">
+        <Link to="/admin/disputes" className="bg-gaming-accent hover:bg-gaming-accent/80 text-white px-4 py-2 rounded-md">
+          Manage Disputes
+        </Link>
+      </div>
       <MatchInfo
         player1={match.player1}
         player2={match.player2}

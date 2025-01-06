@@ -19,12 +19,17 @@ const ProfileAvatar = ({ avatarUrl, isEditing, onAvatarChange }: ProfileAvatarPr
         </AvatarFallback>
       </Avatar>
       {isEditing && (
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={onAvatarChange}
-          className="absolute inset-0 opacity-0 cursor-pointer"
-        />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+          <label className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-blue-600">
+            Change
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={onAvatarChange}
+              className="hidden"
+            />
+          </label>
+        </div>
       )}
     </div>
   );

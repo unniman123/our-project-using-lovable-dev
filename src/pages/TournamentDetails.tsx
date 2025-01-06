@@ -1,21 +1,49 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import Navbar from '@/components/Navbar';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Tournament } from '../types/database/tournament.types';
+import Navbar from '../components/Navbar';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { Trophy, Users, Calendar, Loader2, Swords } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '../integrations/supabase/client';
 import { format } from 'date-fns';
-import TournamentBracket from '@/components/tournament/TournamentBracket';
+import TournamentBracket from '../components/tournament/TournamentBracket';
+import { generateTournamentMatches } from '../utils/tournamentUtils';
+import { Button } from '../components/ui/button';
+import { toast } from "sonner";
 
 const TournamentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { session } = useSessionContext();
 
-  const { data: tournament, isLoading: tournamentLoading } = useQuery({
+  interface ExtendedTournament extends Tournament {
+    image_url?: string;
+    tournament_participants?: {
+      player_id: string;
+      status: string;
+      profiles: {
+        username: string;
+        avatar_url: string;
+        skill_rating: number;
+      };
+    }[];
+    matches?: {
+      id: string;
+      player1_id: string;
+      player2_id: string;
+      winner_id: string | null;
+      status: string;
+      match_date: string;
+      player1: { username: string };
+      player2: { username: string };
+      winner: { username: string } | null;
+    }[];
+  }
+
+  const { data: tournament, isLoading: tournamentLoading, refetch } = useQuery<ExtendedTournament>({
     queryKey: ['tournament', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,7 +70,7 @@ const TournamentDetails = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as ExtendedTournament;
     },
     enabled: !!id && !!session,
   });
@@ -50,6 +78,29 @@ const TournamentDetails = () => {
   const handleMatchClick = (matchId: string) => {
     navigate(`/matches/${matchId}`);
   };
+
+  let isStarting = false;
+  const handleStartTournament = async () => {
+    if (tournament && !isStarting) {
+      isStarting = true;
+      try {
+        await generateTournamentMatches(tournament.id);
+        toast.success("Tournament started and matches created!");
+        refetch();
+      } catch (error) {
+        console.error("Error starting tournament:", error);
+        toast.error("Failed to start tournament.");
+      } finally {
+        isStarting = false;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (tournament && tournament.status === 'upcoming' && tournament.tournament_participants?.length === tournament.max_participants && !tournament.matches?.length) {
+      handleStartTournament();
+    }
+  }, [tournament]);
 
   if (!session) {
     navigate('/login');
@@ -83,6 +134,17 @@ const TournamentDetails = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
         <div className="mb-8">
+          <div className="relative w-full h-64 rounded-lg overflow-hidden mb-4">
+            <img
+              src={tournament.image_url || '/placeholder.svg'}
+              alt={tournament.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gaming-dark/80 via-transparent to-transparent" />
+          </div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-2">
             <Trophy className="text-gaming-accent" />
             {tournament.title}
@@ -144,6 +206,14 @@ const TournamentDetails = () => {
               tournamentId={tournament.id} 
               onMatchClick={handleMatchClick}
             />
+          </div>
+        )}
+
+        {tournament.status === 'upcoming' && tournament.tournament_participants?.length === tournament.max_participants && (
+          <div className="mb-8">
+            <Button onClick={handleStartTournament} className="bg-gaming-accent hover:bg-gaming-accent/80">
+              Start Tournament
+            </Button>
           </div>
         )}
 

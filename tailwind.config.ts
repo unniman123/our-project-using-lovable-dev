@@ -22,8 +22,8 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "#18181b", // zinc-900
+        foreground: "#fafafa", // zinc-50
         gaming: {
           accent: "#00f2fe",
           primary: "#4338ca",
@@ -31,8 +31,8 @@ export default {
           dark: "#0f172a",
         },
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#15803d", // green-700
+          foreground: "#fafafa", // zinc-50
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

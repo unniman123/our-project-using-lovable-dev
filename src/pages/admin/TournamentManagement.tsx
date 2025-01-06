@@ -34,6 +34,7 @@ const TournamentManagement = () => {
     max_participants: '',
     prize_pool: '',
     start_date: '',
+    image: null as File | null,
   });
 
   const { data: tournaments, refetch } = useQuery({
@@ -75,12 +76,37 @@ const TournamentManagement = () => {
   const handleCreateTournament = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let imageUrl = null;
+      
+      // Upload image if provided
+      if (formData.image) {
+        const fileExt = formData.image.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `tournament-images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('tournament-images')
+          .upload(filePath, formData.image);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('tournament-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase.from('tournaments').insert([
         {
-          ...formData,
-          creator_id: (await supabase.auth.getUser()).data.user?.id,
+          title: formData.title,
+          description: formData.description,
+          game_type: formData.game_type,
           max_participants: parseInt(formData.max_participants),
           prize_pool: parseFloat(formData.prize_pool),
+          start_date: formData.start_date,
+          creator_id: (await supabase.auth.getUser()).data.user?.id,
+          image_url: imageUrl,
         },
       ]);
 
@@ -96,6 +122,7 @@ const TournamentManagement = () => {
         max_participants: '',
         prize_pool: '',
         start_date: '',
+        image: null,
       });
     } catch (error) {
       toast.error('Error creating tournament');
@@ -173,6 +200,18 @@ const TournamentManagement = () => {
                     value={formData.start_date}
                     onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                     required
+                    className="bg-gaming-dark/50 border-gaming-accent/20 text-white"
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setFormData({ ...formData, image: e.target.files[0] });
+                      }
+                    }}
                     className="bg-gaming-dark/50 border-gaming-accent/20 text-white"
                   />
                 </div>

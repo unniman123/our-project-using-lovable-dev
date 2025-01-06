@@ -1,47 +1,54 @@
 import React from 'react';
-import { Input } from "@/components/ui/input";
+import { Input } from "../ui/input";
+import { GameAccountsList } from './GameAccountsList.tsx';
+import { Button } from "src/components/ui/button";
+import { GameAccount } from 'src/types/profile.types';
 
 interface ProfileFormProps {
   username: string;
-  gameId: string;
+  gameAccounts: GameAccount[];
   isEditing: boolean;
+  isUsernameValid: boolean;
   onUsernameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onGameIdChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onGameAccountsChange: (accounts: GameAccount[]) => void;
 }
 
 const ProfileForm = ({ 
   username, 
-  gameId, 
-  isEditing, 
-  onUsernameChange, 
-  onGameIdChange 
+  gameAccounts,
+  isEditing,
+  isUsernameValid,
+  onUsernameChange,
+  onGameAccountsChange
 }: ProfileFormProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
         <label className="text-sm text-gray-400">Username</label>
         {isEditing ? (
-          <Input
-            value={username}
-            onChange={onUsernameChange}
-            placeholder="Enter your username"
-          />
+          <div>
+            <Input
+              value={username}
+              onChange={onUsernameChange}
+              placeholder="Enter your username"
+              className={!isUsernameValid ? 'border-red-500' : ''}
+            />
+            {!isUsernameValid && (
+              <p className="text-red-500 text-sm mt-1">Username already taken</p>
+            )}
+          </div>
         ) : (
           <p className="text-white">{username}</p>
         )}
       </div>
 
       <div>
-        <label className="text-sm text-gray-400">Game ID</label>
-        {isEditing ? (
-          <Input
-            value={gameId}
-            onChange={onGameIdChange}
-            placeholder="Enter your game ID"
-          />
-        ) : (
-          <p className="text-white">{gameId || 'Not set'}</p>
-        )}
+        <label className="text-sm text-gray-400">Connected Games</label>
+        <GameAccountsList
+          accounts={gameAccounts}
+          isEditing={isEditing}
+          onChange={onGameAccountsChange}
+        />
       </div>
     </div>
   );
